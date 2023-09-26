@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>R and databases</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="" />
+    <meta name="date" content="2023-09-25" />
+    <script src="clase-2-stringdist_files/header-attrs-2.25/header-attrs.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+name: portada
+class: center, middle
+
+.linea-superior[]
+.linea-inferior[]
+
+&lt;img src="imagenes/logo_portada2.png" width="200" /&gt;
+
+## Mentoría Censo: Codificación
+
+## Proyecto Ciencia de Datos
+
+## Mini-curso de distancias de _strings_ 
+
+
+
+
+
+
+
+---
+
+name: diapo-basica
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Distancias de _strings_ 
+---
+
+template: diapo-basica
+
+## Motivación
+
+- Cuando trabajamos con glosas abiertas muchas veces nos encontraremos con errores ortográficos que nos dificultan su clasificación.
+
+--
+
+- Además, cuando recurrimos a la glosa abierta, es para categorías de baja frecuencia, muchas de ellas pueden terminar teniendo 1 ó 2 repeticiones.
+
+--
+
+- Sin un volumen de datos suficiente para cada categoría, no es posible construir un modelo de clasificación
+
+--
+
+- Tenemos que recurrir a estrategias alternativas, que pueden ser similarmente efectivas
+
+
+---
+
+template: diapo-basica
+
+## Midiendo distancias entre _strings_
+
+.right[
+&lt;img src="imagenes/afro.png" width="15%" style="float: right;" /&gt;]
+
+
+- Nuestra mayor ventaja en un problema así, es que sabemos que las personas trataron de escribir una palabra que pertenece a un set de palabras que nosotros conocemos.
+
+  - Para la aplicación de Censo, esto sería la lista de pueblos originarios.
+  
+--
+  
+- Por lo tanto, cuando una palabra es distinta a los valores que manejamos para los pueblos originarios, sabemos que esta debiese ser al menos _similar_ (salvo algunas ocasiones). 
+
+--
+
+- ¿Cómo medimos esta similitud?
+
+
+---
+
+template: diapo-basica
+
+## Medidas de distancia
+
+
+
+- Para esto utilizaremos el paquete `stringdist`.
+
+--
+
+- Provee múltiples métricas de distancia.
+
+--
+
+- Revisaremos las más clásicas: Levenshtein, OSA, Jaccard y distancia del coseno.
+
+---
+
+template: diapo-basica
+
+## Distancia de Levenshtein o de edición
+
+- Esta medida es muy intuitiva: se refiere a cuántos cáracteres tengo que quitar, agregar o cambiar para llegar de un string a otro
+
+--
+
+
+```r
+library(stringdist)
+
+stringdist('gato', 'pato', method = 'lv')
+```
+
+```
+## [1] 1
+```
+
+--
+
+
+```r
+stringdist('gatos', 'pato', method = 'lv')
+```
+
+```
+## [1] 2
+```
+
+--
+
+
+```r
+stringdist('tos', 'pato', method = 'lv')
+```
+
+
+
+---
+
+template: diapo-basica
+
+## Distancia de Levenshtein o de edición
+
+- Esta medida es muy intuitiva: se refiere a cuántos cáracteres tengo que quitar, agregar o cambiar para llegar de un string a otro
+
+
+```r
+library(stringdist)
+
+stringdist('gato', 'pato', method = 'lv')
+```
+
+```
+## [1] 1
+```
+
+
+```r
+stringdist('gatos', 'pato', method = 'lv')
+```
+
+```
+## [1] 2
+```
+
+
+```r
+stringdist('tos', 'pato', method = 'lv')
+```
+
+```
+## [1] 3
+```
+
+--
+
+
+```r
+stringdist('pero', 'peor', method = 'lv')
+```
+
+---
+
+template: diapo-basica
+
+## Distancia de Levenshtein o de edición
+
+- Esta medida es muy intuitiva: se refiere a cuántos cáracteres tengo que quitar, agregar o cambiar para llegar de un string a otro
+
+
+```r
+library(stringdist)
+
+stringdist('gato', 'pato', method = 'lv')
+```
+
+```
+## [1] 1
+```
+
+
+```r
+stringdist('gatos', 'pato', method = 'lv')
+```
+
+```
+## [1] 2
+```
+
+
+```r
+stringdist('tos', 'pato', method = 'lv')
+```
+
+```
+## [1] 3
+```
+
+
+
+
+```r
+stringdist('pero', 'peor', method = 'lv')
+```
+
+```
+## [1] 2
+```
+
+---
+
+template: diapo-basica
+
+## OSA (Optimal String Alignment)
+
+- Es una pequeña variación a la distancia de Levenshtein. Esta sí considera como una sola operación la 
+transposición entre dos strings **adyacentes**.
+
+--
+
+
+```r
+stringdist('pero', 'peor', method = 'osa')
+```
+
+```
+## [1] 1
+```
+
+--
+
+
+```r
+stringdist('rapero', 'ropera', method = 'osa')
+```
+
+```
+## [1] 2
+```
+
+---
+template: diapo-basica
+
+## Jaccard 
+
+El índice de Jaccard se define como: 
+
+    J(A, B) = (A∩B) / (A∪B)
+    
+Es decir, el ratio entre la intersección de los carácteres de dos strings y su unión
+
+.right[
+&lt;img src="imagenes/jaccard.png" width="50%" style="float: right;"  /&gt;]
+
+--
+
+- Este indicador puede mejorarse utilizando bigramas u otros n-gramas, ya que esta implementación es 
+más simple de lo que es necesario normalmente.
+
+--
+
+  - Veremos este concepto en una clase posterior
+  
+--
+
+- __Importante:__ para este índice dos palabras que comparten todas sus letras son idénticas. Esto puede ser
+una bendición y una maldición.
+
+---
+
+template: diapo-basica
+
+## Jaccard 
+
+**Bendición**:
+
+
+
+```r
+stringdist('AFORDESCENDIENTE', 'AFRODESCENDIENTE', method = 'jaccard')
+```
+
+```
+## [1] 0
+```
+
+--
+
+**Maldición**:
+
+
+```r
+stringdist('TRAMO', 'TOMOMAROTA', method = 'jaccard')
+```
+
+```
+## [1] 0
+```
+
+
+---
+template: diapo-basica
+
+## Distancia del coseno
+
+.right[
+&lt;img src="imagenes/distancia_coseno.webp" width="45%" style="float: right;"  /&gt;]
+
+- Es una medida de similitud entre dos vectores
+
+--
+
+- Podemos transformar strings en vectores, lo que nos permite utilizar esta medida
+
+--
+
+- La intuición de la fórmula es que mientras más similares sean los vectores, más pequeño será el ángulo y por lo tanto más cercano a 1 será la distancia (el coseno de 0° es igual 1).
+
+
+---
+template: diapo-basica
+
+## Ejemplo de uso en R
+
+Vamos al script!
+
+---
+template: diapo-basica
+
+## Desafíos
+
+- Personas que no responden un pueblo 
+
+.center[
+&lt;img src="imagenes/grupos_invalidos.png" width="45%"   /&gt;]
+
+
+- Personas que declaran pertenecer a múltiples pueblos
+
+.center[
+&lt;img src="imagenes/dos_pueblos.png" width="45%"   /&gt;]
+
+
+---
+template: diapo-basica
+
+## Conclusiones
+
+- No hay una medida que sea siempre mejor que otra, pero OSA y Coseno son un buen comienzo 
+para hacer pruebas
+
+--
+
+- Esta metodología debería ser útil para la mayoría de casos, pero existirán múltiples casos
+límite en que será insuficiente
+  - Conocimiento técnico del problema e ingenio pueden ayudar a complementar.
+
+
+---
+template: portada
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "13:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

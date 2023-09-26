@@ -1,0 +1,377 @@
+---
+title: "R and databases"
+subtitle: "calidad"
+author: 
+date: '`r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    seal: false
+    #lib_dir: libs
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: False
+      ratio: '13:9'
+---
+
+name: portada
+class: center, middle
+
+.linea-superior[]
+.linea-inferior[]
+
+<img src="imagenes/logo_portada2.png" width="200" />
+
+## Mentoría Censo: Codificación
+
+## Proyecto Ciencia de Datos
+
+## Mini-curso de distancias de _strings_ 
+
+
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = TRUE)
+knitr::opts_chunk$set(message = FALSE, warning = F, eval = T) 
+options(scipen = "999")
+options(knitr.table.format = "html")
+
+```
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+library(dplyr)
+library(magrittr)
+library(readr)
+library(stringdist)
+library(kableExtra)
+```
+
+---
+
+name: diapo-basica
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Distancias de _strings_ 
+---
+
+template: diapo-basica
+
+## Motivación
+
+- Cuando trabajamos con glosas abiertas muchas veces nos encontraremos con errores ortográficos que nos dificultan su clasificación.
+
+--
+
+- Además, cuando recurrimos a la glosa abierta, es para categorías de baja frecuencia, muchas de ellas pueden terminar teniendo 1 ó 2 repeticiones.
+
+--
+
+- Sin un volumen de datos suficiente para cada categoría, no es posible construir un modelo de clasificación
+
+--
+
+- Tenemos que recurrir a estrategias alternativas, que pueden ser similarmente efectivas
+
+
+---
+
+template: diapo-basica
+
+## Midiendo distancias entre _strings_
+
+.right[
+<img src="imagenes/afro.png" width="15%" style="float: right;" />]
+
+
+- Nuestra mayor ventaja en un problema así, es que sabemos que las personas trataron de escribir una palabra que pertenece a un set de palabras que nosotros conocemos.
+
+  - Para la aplicación de Censo, esto sería la lista de pueblos originarios.
+  
+--
+  
+- Por lo tanto, cuando una palabra es distinta a los valores que manejamos para los pueblos originarios, sabemos que esta debiese ser al menos _similar_ (salvo algunas ocasiones). 
+
+--
+
+- ¿Cómo medimos esta similitud?
+
+
+---
+
+template: diapo-basica
+
+## Medidas de distancia
+
+
+
+- Para esto utilizaremos el paquete `stringdist`.
+
+--
+
+- Provee múltiples métricas de distancia.
+
+--
+
+- Revisaremos las más clásicas: Levenshtein, OSA, Jaccard y distancia del coseno.
+
+---
+
+template: diapo-basica
+
+## Distancia de Levenshtein o de edición
+
+- Esta medida es muy intuitiva: se refiere a cuántos cáracteres tengo que quitar, agregar o cambiar para llegar de un string a otro
+
+--
+
+```{r}
+library(stringdist)
+
+stringdist('gato', 'pato', method = 'lv')
+
+```
+
+--
+
+```{r}
+
+
+stringdist('gatos', 'pato', method = 'lv')
+
+```
+
+--
+
+```{r, eval=F}
+
+
+stringdist('tos', 'pato', method = 'lv')
+
+```
+
+
+
+---
+
+template: diapo-basica
+
+## Distancia de Levenshtein o de edición
+
+- Esta medida es muy intuitiva: se refiere a cuántos cáracteres tengo que quitar, agregar o cambiar para llegar de un string a otro
+
+```{r}
+library(stringdist)
+
+stringdist('gato', 'pato', method = 'lv')
+
+```
+
+```{r}
+
+
+stringdist('gatos', 'pato', method = 'lv')
+
+```
+
+```{r, eval=T}
+
+
+stringdist('tos', 'pato', method = 'lv')
+
+```
+
+--
+
+```{r, eval=F}
+
+
+stringdist('pero', 'peor', method = 'lv')
+
+```
+
+---
+
+template: diapo-basica
+
+## Distancia de Levenshtein o de edición
+
+- Esta medida es muy intuitiva: se refiere a cuántos cáracteres tengo que quitar, agregar o cambiar para llegar de un string a otro
+
+```{r}
+library(stringdist)
+
+stringdist('gato', 'pato', method = 'lv')
+
+```
+
+```{r}
+
+
+stringdist('gatos', 'pato', method = 'lv')
+
+```
+
+```{r, eval=T}
+
+
+stringdist('tos', 'pato', method = 'lv')
+
+```
+
+
+
+```{r, eval=T}
+
+
+stringdist('pero', 'peor', method = 'lv')
+
+```
+
+---
+
+template: diapo-basica
+
+## OSA (Optimal String Alignment)
+
+- Es una pequeña variación a la distancia de Levenshtein. Esta sí considera como una sola operación la 
+transposición entre dos strings **adyacentes**.
+
+--
+
+```{r, eval=T}
+
+
+stringdist('pero', 'peor', method = 'osa')
+
+```
+
+--
+
+```{r, eval=T}
+
+
+stringdist('rapero', 'ropera', method = 'osa')
+
+```
+
+---
+template: diapo-basica
+
+## Jaccard 
+
+El índice de Jaccard se define como: 
+
+    J(A, B) = (A∩B) / (A∪B)
+    
+Es decir, el ratio entre la intersección de los carácteres de dos strings y su unión
+
+.right[
+<img src="imagenes/jaccard.png" width="50%" style="float: right;"  />]
+
+--
+
+- Este indicador puede mejorarse utilizando bigramas u otros n-gramas, ya que esta implementación es 
+más simple de lo que es necesario normalmente.
+
+--
+
+  - Veremos este concepto en una clase posterior
+  
+--
+
+- __Importante:__ para este índice dos palabras que comparten todas sus letras son idénticas. Esto puede ser
+una bendición y una maldición.
+
+---
+
+template: diapo-basica
+
+## Jaccard 
+
+**Bendición**:
+
+
+```{r}
+stringdist('AFORDESCENDIENTE', 'AFRODESCENDIENTE', method = 'jaccard')
+
+
+```
+
+--
+
+**Maldición**:
+
+```{r}
+stringdist('TRAMO', 'TOMOMAROTA', method = 'jaccard')
+
+```
+
+
+---
+template: diapo-basica
+
+## Distancia del coseno
+
+.right[
+<img src="imagenes/distancia_coseno.webp" width="45%" style="float: right;"  />]
+
+- Es una medida de similitud entre dos vectores
+
+--
+
+- Podemos transformar strings en vectores, lo que nos permite utilizar esta medida
+
+--
+
+- La intuición de la fórmula es que mientras más similares sean los vectores, más pequeño será el ángulo y por lo tanto más cercano a 1 será la distancia (el coseno de 0° es igual 1).
+
+
+---
+template: diapo-basica
+
+## Ejemplo de uso en R
+
+Vamos al script!
+
+---
+template: diapo-basica
+
+## Desafíos
+
+- Personas que no responden un pueblo 
+
+.center[
+<img src="imagenes/grupos_invalidos.png" width="45%"   />]
+
+
+- Personas que declaran pertenecer a múltiples pueblos
+
+.center[
+<img src="imagenes/dos_pueblos.png" width="45%"   />]
+
+
+---
+template: diapo-basica
+
+## Conclusiones
+
+- No hay una medida que sea siempre mejor que otra, pero OSA y Coseno son un buen comienzo 
+para hacer pruebas
+
+--
+
+- Esta metodología debería ser útil para la mayoría de casos, pero existirán múltiples casos
+límite en que será insuficiente
+  - Conocimiento técnico del problema e ingenio pueden ayudar a complementarla.
+
+--
+
+- Será necesario explorar múltiples caminos para determinar el camino final a seguir.
+
+
+---
+template: portada
