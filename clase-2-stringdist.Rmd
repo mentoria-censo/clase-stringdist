@@ -329,6 +329,14 @@ template: diapo-basica
 
 - La intuición de la fórmula es que mientras más similares sean los vectores, más pequeño será el ángulo y por lo tanto más cercano a 1 será la distancia (el coseno de 0° es igual 1).
 
+--
+
+- Es similar a Jaccard, en el sentido que dos palabras de un mismo largo
+que utilizan las mismas letras en un orden distinto son
+consideradas iguales.
+
+--
+- Es mejor que Jaccard en el sentido que dos palabras que utilizan las mismas letras, pero con un largo distinto, no son consideradas iguales.
 
 ---
 template: diapo-basica
